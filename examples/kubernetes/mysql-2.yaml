@@ -1,0 +1,61 @@
+# second mysql pod using the same CSI volume
+#
+# $ kubectl apply -f examples/kubernetes/mysql-dynamic-volume-2.yaml
+#
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-mysql-2
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: wordpress
+    tier: mysql
+  clusterIP: None
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: wordpress-mysql-2-2
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql
+        name: mysql
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: "1"
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: mysql-pass
+              #     key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: intelliflash-csi-file-driver-pvc-mysql-dynamic
+          readOnly: false

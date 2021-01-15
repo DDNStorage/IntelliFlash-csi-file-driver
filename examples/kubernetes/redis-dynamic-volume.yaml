@@ -1,0 +1,95 @@
+# Redis pod with dynamic storage creation using IntelliFlash CSI driver
+#
+# $ kubectl apply -f examples/kubernetes/reids-dynamic-volume.yaml
+#
+# --------------------------------------
+# IntelliFlash CSI Driver - Storage Class
+# --------------------------------------
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: intelliflash-csi-file-driver-sc-redis-dynamic
+provisioner: intelliflash-csi-file-driver.intelliflash.com
+allowVolumeExpansion: true
+parameters:
+  nfsAccessList: rw:no_root_squash@10.204.86.116    # list of addresses to allow NFS access to.
+                                                    # Format: [accessMode][no_root_squash(optional)]@[address]/[mask]
+                                                    # accessMode and mask are optional, default mode is rw.
+---
+
+# ------------------------------------------------
+# IntelliFlash CSI Driver - Persistent Volume Claim
+# ------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: intelliflash-csi-file-driver-pvc-redis-dynamic
+  labels:
+    app: wordpress
+spec:
+  storageClassName: intelliflash-csi-file-driver-sc-redis-dynamic
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    role: master
+    tier: backend
+spec:
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+    role: master
+    tier: backend
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+        tier: backend
+    spec:
+      containers:
+      - name: master
+        image: redis  # or image: k8s.gcr.io/redis:e2e
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-persistent-storage
+          mountPath: /data
+      volumes:
+      - name: redis-persistent-storage
+        persistentVolumeClaim:
+          claimName: intelliflash-csi-file-driver-pvc-redis-dynamic
+          readOnly: false        

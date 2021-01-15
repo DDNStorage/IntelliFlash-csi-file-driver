@@ -1,0 +1,67 @@
+# Nginx pod with dynamic storage creation using IntelliFlash CSI driver [read-only]
+#
+# $ kubectl apply -f examples/kubernetes/nginx-dynamic-volume-ro.yaml
+#
+
+
+# --------------------------------------
+# IntelliFlash CSI Driver - Storage Class
+# --------------------------------------
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: intelliflash-csi-file-driver-cs-nginx-dynamic-ro
+provisioner: intelliflash-csi-file-driver.intelliflash.com
+mountOptions:                        # list of options for `mount -o ...` command
+#  - noatime                         #
+parameters:
+  #project: customProject # to overwrite "defaultProject" config property [project]
+  #dataIp: 20.20.20.253              # to overwrite "defaultDataIp" config property
+  #mountFsType: nfs                  # to overwrite "defaultMountFsType" config property
+  #mountOptions: noatime             # to overwrite "defaultMountOptions" config property
+---
+
+
+# ------------------------------------------------
+# IntelliFlash CSI Driver - Persistent Volume Claim
+# ------------------------------------------------
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: intelliflash-csi-file-driver-pvc-nginx-dynamic-ro
+spec:
+  storageClassName: intelliflash-csi-file-driver-cs-nginx-dynamic-ro
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+
+
+# ---------
+# Nginx pod
+# ---------
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-dynamic-volume-ro
+spec:
+  containers:
+    - image: nginx
+      imagePullPolicy: IfNotPresent
+      name: nginx
+      ports:
+        - containerPort: 80
+          protocol: TCP
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: intelliflash-csi-file-driver-data
+  volumes:
+    - name: intelliflash-csi-file-driver-data
+      persistentVolumeClaim:
+        claimName: intelliflash-csi-file-driver-pvc-nginx-dynamic-ro
+        readOnly: true

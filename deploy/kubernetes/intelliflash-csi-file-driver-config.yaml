@@ -1,0 +1,16 @@
+# intelliflash-csi-file-driver config file to create k8s secret
+#
+# $ kubectl create secret generic intelliflash-csi-file-driver-config \
+#   --from-file=deploy/kubernetes/intelliflash-csi-file-driver-config.yaml
+#
+
+arrays:
+  array:
+    restIp: https://172.27.10.30:443   # [required] IntelliFlash REST API endpoint
+    username: admin                    # [required] IntelliFlash REST API username
+    password: t                        # [required] IntelliFlash REST API password
+    defaultProject: csi-file           # default project name for driver's volume
+    defaultDataIp: 172.27.10.30        # default IntelliFlash data IP
+    defaultMountFsType: nfs            # default mount fs type [nfs|cifs]
+    defaultMountOptions: vers=4        # default mount options (mount -o ...)
+debug: true
