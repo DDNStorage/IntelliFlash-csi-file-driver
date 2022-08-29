@@ -1,0 +1,72 @@
+# Nginx pod with dynamic storage creation using IntelliFlash CSI driver
+#
+# $ kubectl apply -f examples/kubernetes/nginx-dynamic-volume.yaml
+#
+
+
+# --------------------------------------
+# IntelliFlash CSI Driver - Storage Class
+# --------------------------------------
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: intelliflash-csi-file-driver-sc-no-rest-api-dynamic
+provisioner: intelliflash-csi-file-driver.intelliflash.com
+mountOptions:                        # list of options for `mount -o ...` command
+#  - noatime                         #
+allowVolumeExpansion: true
+# volumeBindingMode: Immediate
+# allowedTopologies:
+# - matchLabelExpressions:
+#   - key: topology.kubernetes.io/zone
+#     values:
+#     - zone-1
+parameters:
+  lowTierVolume: "true" # a tier that does not use any Rest API calls to create/delete a volume. Does not have snapshot and clone 
+
+---
+
+
+# ------------------------------------------------
+# IntelliFlash CSI Driver - Persistent Volume Claim
+# ------------------------------------------------
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: intelliflash-csi-file-driver-pvc-nginx-dynamic-no-rest-api
+spec:
+  storageClassName: intelliflash-csi-file-driver-sc-no-rest-api-dynamic
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+
+
+# ---------
+# Nginx pod
+# ---------
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-no-rest-api-volume
+spec:
+  containers:
+    - image: nginx
+      imagePullPolicy: IfNotPresent
+      name: nginx
+      ports:
+        - containerPort: 80
+          protocol: TCP
+      volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: intelliflash-csi-file-driver-data
+  volumes:
+    - name: intelliflash-csi-file-driver-data
+      persistentVolumeClaim:
+        claimName: intelliflash-csi-file-driver-pvc-nginx-dynamic-no-rest-api
+        readOnly: false

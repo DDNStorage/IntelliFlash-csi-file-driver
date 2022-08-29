@@ -1,0 +1,32 @@
+# ---------------------------------------
+# IntelliFlash CSI Driver - Storage Class
+# ---------------------------------------
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: intelliflash-csi-file-driver-sc-solr-dynamic
+provisioner: intelliflash-csi-file-driver.intelliflash.com
+allowVolumeExpansion: true
+parameters:
+  nfsAccessList: rw:no_root_squash@10.204.86.116    # list of addresses to allow NFS access to.
+                                                    # Format: [accessMode][no_root_squash(optional)]@[address]/[mask]
+                                                    # accessMode and mask are optional, default mode is rw.
+---
+
+# ------------------------------------------------
+# IntelliFlash CSI Driver - Persistent Volume Claim
+# ------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: intelliflash-csi-file-driver-pvc-solr-dynamic
+  labels:
+    app: solr
+spec:
+  storageClassName: intelliflash-csi-file-driver-sc-solr-dynamic
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---

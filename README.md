@@ -6,22 +6,22 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
 ## Supported kubernetes versions matrix
 
 ## Feature List
-|Feature|Feature Status|CSI Driver Version|CSI Spec Version|Kubernetes Version|
-|--- |--- |--- |--- |--- |
-|Static Provisioning|GA|>= v1.0.0|>= v1.0.0|>=1.13|
-|Dynamic Provisioning|GA|>= v1.0.0|>= v1.0.0|>=1.13|
-|RW mode|GA|>= v1.0.0|>= v1.0.0|>=1.13|
-|RO mode|GA|>= v1.0.0|>= v1.0.0|>=1.13|
-|Creating and deleting snapshot|GA|>= v1.2.0|>= v1.0.0|>=1.17|
-|Provision volume from snapshot|GA|>= v1.2.0|>= v1.0.0|>=1.17|
-|Provision volume from another volume|GA|>= v1.3.0|>= v1.0.0|>=1.17|
-|List snapshots of a volume|Beta|>= v1.2.0|>= v1.0.0|>=1.17|
-|Expand volume|GA|>= v1.3.0|>= v1.1.0|>=1.16|
-|Access list for volume (NFS only)|GA|>= v1.3.0|>= v1.0.0|>=1.13|
-|Topology|Beta|>= v1.4.0|>= v1.0.0|>=1.17|
-|Raw block device|In development|future|>= v1.0.0|>=1.14|
-|StorageClass Secrets|Beta|>= v1.3.0|>=1.0.0|>=1.13|
-|Mount options|GA|>=v1.0.0|>=v1.0.0|>=v1.13|
+|Feature|Feature Status|CSI Driver Version|CSI Spec Version|Kubernetes Version|Intelliflash Version|
+|--- |--- |--- |--- |--- |--- |
+|Static Provisioning|GA|>= v1.0.0|>= v1.0.0|>=1.13|>=3.11.2|
+|Dynamic Provisioning|GA|>= v1.0.0|>= v1.0.0|>=1.13|>=3.11.2|
+|RW mode|GA|>= v1.0.0|>= v1.0.0|>=1.13|>=3.11.2|
+|RO mode|GA|>= v1.0.0|>= v1.0.0|>=1.13|>=3.11.2|
+|Creating and deleting snapshot|GA|>= v1.2.0|>= v1.0.0|>=1.17|>=3.11.2|
+|Provision volume from snapshot|GA|>= v1.2.0|>= v1.0.0|>=1.17|>=3.11.2|
+|Provision volume from another volume|GA|>= v1.3.0|>= v1.0.0|>=1.17|>=3.11.2|
+|List snapshots of a volume|Beta|>= v1.2.0|>= v1.0.0|>=1.17|>=3.11.2|
+|Expand volume|GA|>= v1.3.0|>= v1.1.0|>=1.16|>=3.11.2|
+|Access list for volume (NFS only)|GA|>= v1.3.0|>= v1.0.0|>=1.13|>=3.11.2|
+|Topology|Beta|>= v1.4.0|>= v1.0.0|>=1.17|>=3.11.2|
+|Raw block device|In development|future|>= v1.0.0|>=1.14|>=3.11.2|
+|StorageClass Secrets|Beta|>= v1.3.0|>=1.0.0|>=1.13|>=3.11.2|
+|Mount options|GA|>=v1.0.0|>=v1.0.0|>=v1.13|>=3.11.2|
 
 ## Requirements
 
@@ -48,7 +48,7 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
    By default, the driver will create filesystems in this dataset and mount them to use as Kubernetes volumes.
 2. Clone driver repository
    ```bash
-   git clone https://github.com/DDNStorage/intelliflash-csi-file-driver.git
+   git clone https://bitbucket.eng-us.tegile.com/scm/eco/intelliflash-csi-file-driver.git
    cd intelliflash-csi-file-driver
    ```
 3. Edit `deploy/kubernetes/intelliflash-csi-file-driver-config.yaml` file. Driver configuration example:
@@ -247,6 +247,43 @@ kubectl get volumesnapshots.snapshot.storage.k8s.io
 
 # snapshot content list
 kubectl get volumesnapshotcontents.snapshot.storage.k8s.io
+```
+
+
+## No Rest API tier
+
+No Rest API tier can be useful if you do not need advanced functionality such as snapshots and clones and volume creation/deletion time is a priority. This tier does not use any API calls for volume management and operates with the NFS mount on the filesystem level.
+In order to use this tier, you need to manually create a filesystem on Intelliflash and set appropriate ACLs for it to be mountable on all nodes of k8s cluster where the driver is running. All the volumes will be represented as separate folders in this filesystem.
+It is required to pass `lowTierVolume: true` as a parameter in the storageClass. Also, `parentShareMountPoint` that represents the mount point on Intelliflash side needs to be passed in config section.
+
+Examples:
+config file
+```bash
+arrays:
+  array:
+    restIp: https://10.204.86.70:443
+    username: admin
+    password: t
+    defaultProject: csi-file
+    defaultDataIp: 10.204.86.71
+    defaultMountFsType: nfs
+    defaultMountOptions: nolock,vers=3 # only vers=4 works in container
+    parentShareMountPoint: "/export/csi-file/parentfs"      # used for lowTierVolume
+
+debug: true
+
+```
+
+storage class
+```bash
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: intelliflash-csi-file-driver-cs-nginx-dynamic
+provisioner: intelliflash-csi-file-driver.intelliflash.com
+parameters:
+  lowTierVolume: "true"  # a tier that does not use any Rest API calls to create/delete a volume. Does not have snapshot and clone capabilities.
 ```
 
 ## Uninstall
