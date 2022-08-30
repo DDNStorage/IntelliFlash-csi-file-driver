@@ -249,8 +249,8 @@ spec:
             capabilities:
               add: ['SYS_ADMIN']
             allowPrivilegeEscalation: true
-          image: 10.204.86.117:5000/intelliflash-csi-file-driver:master
-          imagePullPolicy: Always
+          image: intelliflash-csi-file-driver:master
+          imagePullPolicy: IfNotPresent
           args:
             - --nodeid=$(KUBE_NODE_NAME)
             - --endpoint=unix://csi/csi.sock
@@ -372,8 +372,8 @@ spec:
             capabilities:
               add: ['SYS_ADMIN']
             allowPrivilegeEscalation: true
-          image: 10.204.86.117:5000/intelliflash-csi-file-driver:master
-          imagePullPolicy: Always
+          image: intelliflash-csi-file-driver:master
+          imagePullPolicy: IfNotPresent
           args:
             - --nodeid=$(KUBE_NODE_NAME)
             - --endpoint=unix://csi/csi.sock

@@ -49,9 +49,13 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
 2. Clone driver repository
    ```bash
    git clone https://github.com/DDNStorage/intelliflash-csi-file-driver.git
-   cd intelliflash-csi-file-driver
+   cd IntelliFlash-csi-file-driver
    ```
-3. Edit `deploy/kubernetes/intelliflash-csi-file-driver-config.yaml` file. Driver configuration example:
+3. Load docker image
+  ```bash
+  docker load -i bin/intelliflash-csi-file-driver.tar
+  ```
+4. Edit `deploy/kubernetes/intelliflash-csi-file-driver-config.yaml` file. Driver configuration example:
    ```yaml
    arrays:
 	array:
@@ -67,11 +71,11 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
      #defaultMountOptions: username=admin,password=secrete   # username/password must be defined for CIFS
    debug: true
    ```
-4. Create Kubernetes secret from the file:
+5. Create Kubernetes secret from the file:
    ```bash
    kubectl create secret generic intelliflash-csi-file-driver-config --from-file=deploy/kubernetes/intelliflash-csi-file-driver-config.yaml
    ```
-5. Register driver to Kubernetes:
+6. Register driver to Kubernetes:
    ```bash
    kubectl apply -f deploy/kubernetes/intelliflash-csi-file-driver.yaml
    ```
@@ -268,7 +272,7 @@ arrays:
     defaultDataIp: 10.204.86.71
     defaultMountFsType: nfs
     defaultMountOptions: nolock,vers=3 # only vers=4 works in container
-    parentShareMountPoint: "/export/csi-file/parentfs"      # used for lowTierVolume
+    parentShareMountPoint: "export/csi-file/parentfs"      # used for lowTierVolume
 
 debug: true
 
