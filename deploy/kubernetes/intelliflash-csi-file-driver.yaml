@@ -249,7 +249,7 @@ spec:
             capabilities:
               add: ['SYS_ADMIN']
             allowPrivilegeEscalation: true
-          image: intelliflash-csi-file-driver:master
+          image: intelliflashbyddn/intelliflash-csi-file-driver:v1.0.0
           imagePullPolicy: IfNotPresent
           args:
             - --nodeid=$(KUBE_NODE_NAME)
@@ -372,7 +372,7 @@ spec:
             capabilities:
               add: ['SYS_ADMIN']
             allowPrivilegeEscalation: true
-          image: intelliflash-csi-file-driver:master
+          image: intelliflashbyddn/intelliflash-csi-file-driver:v1.0.0
           imagePullPolicy: IfNotPresent
           args:
             - --nodeid=$(KUBE_NODE_NAME)
