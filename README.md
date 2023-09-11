@@ -23,6 +23,14 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
 |StorageClass Secrets|Beta|>= v1.3.0|>=1.0.0|>=1.13|>=3.11.2|
 |Mount options|GA|>=v1.0.0|>=v1.0.0|>=v1.13|>=3.11.2|
 
+## Access Modes support
+|Access mode| Supported in version|
+|--- |--- |
+|ReadWriteOnce| >=1.0.0 |
+|ReadOnlyMany| >=1.0.0 |
+|ReadWriteMany| >=1.0.0 |
+|ReadWriteOncePod| >=1.1.0 |
+
 ## Requirements
 
 - Kubernetes cluster must allow privileged pods, this flag must be set for the API server and the kubelet
@@ -48,14 +56,10 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
    By default, the driver will create filesystems in this dataset and mount them to use as Kubernetes volumes.
 2. Clone driver repository
    ```bash
-   git clone https://github.com/DDNStorage/intelliflash-csi-file-driver.git
-   cd IntelliFlash-csi-file-driver
+   git clone https://bitbucket.eng-us.tegile.com/scm/eco/intelliflash-csi-file-driver.git
+   cd intelliflash-csi-file-driver
    ```
-3. Load docker image
-  ```bash
-  docker load -i bin/intelliflash-csi-file-driver.tar
-  ```
-4. Edit `deploy/kubernetes/intelliflash-csi-file-driver-config.yaml` file. Driver configuration example:
+3. Edit `deploy/kubernetes/intelliflash-csi-file-driver-config.yaml` file. Driver configuration example:
    ```yaml
    arrays:
 	array:
@@ -71,11 +75,11 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
      #defaultMountOptions: username=admin,password=secrete   # username/password must be defined for CIFS
    debug: true
    ```
-5. Create Kubernetes secret from the file:
+4. Create Kubernetes secret from the file:
    ```bash
    kubectl create secret generic intelliflash-csi-file-driver-config --from-file=deploy/kubernetes/intelliflash-csi-file-driver-config.yaml
    ```
-6. Register driver to Kubernetes:
+5. Register driver to Kubernetes:
    ```bash
    kubectl apply -f deploy/kubernetes/intelliflash-csi-file-driver.yaml
    ```
@@ -272,7 +276,7 @@ arrays:
     defaultDataIp: 10.204.86.71
     defaultMountFsType: nfs
     defaultMountOptions: nolock,vers=3 # only vers=4 works in container
-    parentShareMountPoint: "export/csi-file/parentfs"      # used for lowTierVolume
+    parentShareMountPoint: "/export/csi-file/parentfs"      # used for lowTierVolume
 
 debug: true
 
