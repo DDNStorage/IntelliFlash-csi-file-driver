@@ -56,7 +56,7 @@ The Intelliflash Container Storage Interface (CSI) Driver provides a CSI interfa
    By default, the driver will create filesystems in this dataset and mount them to use as Kubernetes volumes.
 2. Clone driver repository
    ```bash
-   git clone https://bitbucket.eng-us.tegile.com/scm/eco/intelliflash-csi-file-driver.git
+   git clone https://github.com/DDNStorage/IntelliFlash-csi-file-driver.git
    cd intelliflash-csi-file-driver
    ```
 3. Edit `deploy/kubernetes/intelliflash-csi-file-driver-config.yaml` file. Driver configuration example:
